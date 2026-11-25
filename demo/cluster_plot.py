@@ -13,8 +13,6 @@ from __future__ import annotations
 import os
 import sys
 from typing import List
-
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -24,8 +22,26 @@ OUTPUT_DIR = "demo_output"
 
 
 def main(args: List[str]) -> None:
+    """
+    Run K-means clustering on a CSV dataset for k = 2, 3, 4 and 5.
+
+    Select the first two numerical features, standardise the data,
+    perform clustering and save clustered datasets, visualisations
+    and evaluation metrics in the output directory.
+
+    Parameters
+    ----------
+    args : List[str]
+        Command-line arguments containing the input CSV file path.
+
+    Returns
+    -------
+    None
+        Results are printed to the terminal and saved.
+    """
     if len(args) != 1:
-        print("Usage: python cluster_plot.py <input_csv>")
+        print("Usage: python demo/cluster_plot.py <input_csv>")
+        print("Example: python demo/cluster_plot.py data/demo_data.csv")
         sys.exit(1)
 
     input_path = args[0]
@@ -59,7 +75,7 @@ def main(args: List[str]) -> None:
             input_path=input_path,
             feature_cols=feature_cols,
             algorithm="kmeans",
-            k = min(k, 3),
+            k = k,
             standardise=True,
             output_path=os.path.join(OUTPUT_DIR, f"{base}_clustered_k{k}.csv"),
             random_state=42,
@@ -86,9 +102,9 @@ def main(args: List[str]) -> None:
     metrics_df.to_csv(metrics_csv, index=False)
 
     # Plot some statistics (no elbow: avoid inertia vs k)
-    if "silhouette_score" in metrics_df.columns:
+    if "silhouette" in metrics_df.columns:
         plt.figure()
-        plt.bar(metrics_df["k"], metrics_df["silhouette_score"])
+        plt.bar(metrics_df["k"], metrics_df["silhouette"])
         plt.xlabel("k")
         plt.ylabel("Silhouette score")
         plt.title("Silhouette score for different k")
