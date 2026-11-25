@@ -1,5 +1,5 @@
 # cluster_maker
-`cluster_maker` is a ...
+`cluster_maker` is a Python package for data preprocessing, clustering analysis, evaluation, and visualisation. It provides tools for applying clustering algorithms to datasets, comparing clustering results, and exporting analysed data.
 
 ## Allowed libraries
 The package only uses:
@@ -14,14 +14,30 @@ The package only uses:
 No other third-party libraries are required and/or are permitted.
 
 ## Main features
-- ... 
-- ...
+- Data preprocessing, including feature selection and standardisation.
+- K-means clustering using both a manual implementation and scikit-learn.
+- Agglomerative hierarchical clustering using different linkage methods.
+- Evaluation of clustering results using inertia and silhouette scores.
+- Elbow method analysis to help select an appropriate number of clusters.
+- Visualisation of clustered datasets and evaluation results.
+- Generation, analysis, and export of data using pandas and NumPy.
+
 
 ## Package root directory structure
-- `cluster_maker/` - Package directory  
-- `demo/` – example scripts  
-- `data/` - csv data file used by the example scripts
-- `tests/` – basic unit tests using the standard library `unittest`
+
+- `cluster_maker/` - Main package directory.
+  - `algorithms.py` - K-means clustering algorithms.
+  - `agglomerative.py` - Agglomerative hierarchical clustering.
+  - `preprocessing.py` - Feature selection and standardisation.
+  - `evaluation.py` - Clustering evaluation metrics.
+  - `plotting_clustered.py` - Clustering and elbow plots.
+  - `interface.py` - High-level clustering interface.
+  - `dataframe_builder.py` - Data generation and DataFrame creation.
+  - `data_analyser.py` - Descriptive statistics and correlation analysis.
+  - `data_exporter.py` - Data export functions.
+- `demo/` - Example scripts 
+- `data/` - CSV datasets used by the example scripts.
+- `tests/` - Unit tests using the standard library `unittest`.
 
 ## Installation (local use)
 From the root directory of the project (the directory containing `pyproject.toml`), run:
