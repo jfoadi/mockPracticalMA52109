@@ -40,10 +40,10 @@ def assign_clusters(X: np.ndarray, centroids: np.ndarray) -> np.ndarray:
     # Broadcast to compute distances
     diff = X[:, np.newaxis, :] - centroids[np.newaxis, :, :]
     distances = np.linalg.norm(diff, axis=2)  # (n_samples, k)
-    labels = np.argmin(distances, axis=2) #argmin as we want to assign a sample to the nearest centroid, not the farthest
+    labels = np.argmin(distances, axis=1) #argmin as we want to assign a sample to the nearest centroid, not the farthest
     return labels
 
-#axes must be 'axis=2' as it is a 3D array because there are 3 axes
+#axis must be 'axis=2' for line 42 as it is a 3D array because there are 3 axes
 
 def update_centroids(
     X: np.ndarray,
