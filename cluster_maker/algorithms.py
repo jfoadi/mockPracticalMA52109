@@ -40,8 +40,10 @@ def assign_clusters(X: np.ndarray, centroids: np.ndarray) -> np.ndarray:
     # centroids: (k, n_features)
     # Broadcast to compute distances
     diff = X[:, np.newaxis, :] - centroids[np.newaxis, :, :]
-    distances = np.linalg.norm(diff, axis=1)  # (n_samples, k)
-    labels = np.argmax(distances, axis=1)
+    # Compute Euclidean distances across the feature axis
+    distances = np.linalg.norm(diff, axis=2)  # (n_samples, k)
+    # Assign each sample to the centroid with the minimum distance
+    labels = np.argmin(distances, axis=1)
     return labels
 
 
