@@ -23,7 +23,8 @@ def init_centroids(
     if k <= 0:
         raise ValueError("k must be a positive integer.")
     n_samples = X.shape[0]
-    if k > X.shape[1]:
+    # if k > X.shape[1]:
+    if k > n_samples: #new code
         raise ValueError("k cannot be larger than the number of samples.")
 
     rng = np.random.RandomState(random_state)
