@@ -59,7 +59,7 @@ def main(args: List[str]) -> None:
             input_path=input_path,
             feature_cols=feature_cols,
             algorithm="kmeans",
-            k = min(k, 3),
+            k = k, #Task 2: k is passed to run_clustering
             standardise=True,
             output_path=os.path.join(OUTPUT_DIR, f"{base}_clustered_k{k}.csv"),
             random_state=42,
@@ -86,9 +86,9 @@ def main(args: List[str]) -> None:
     metrics_df.to_csv(metrics_csv, index=False)
 
     # Plot some statistics (no elbow: avoid inertia vs k)
-    if "silhouette_score" in metrics_df.columns:
+    if "silhouette" in metrics_df.columns: #Task 2: silhouette score is plotted
         plt.figure()
-        plt.bar(metrics_df["k"], metrics_df["silhouette_score"])
+        plt.bar(metrics_df["k"], metrics_df["silhouette"])#Task 2: silhouette score is plotted
         plt.xlabel("k")
         plt.ylabel("Silhouette score")
         plt.title("Silhouette score for different k")
