@@ -22,12 +22,13 @@ def init_centroids(
     """
     if k <= 0:
         raise ValueError("k must be a positive integer.")
+    # Validate k against the number of samples, not features.
     n_samples = X.shape[0]
-    if k > X.shape[1]:
+    if k > n_samples:
         raise ValueError("k cannot be larger than the number of samples.")
-
+    # Select exactly k distinct sample indices to initialise centroids.
     rng = np.random.RandomState(random_state)
-    indices = rng.choice(n_samples, size=k + 1, replace=False)
+    indices = rng.choice(n_samples, size=k , replace=False)
     return X[indices]
 
 
