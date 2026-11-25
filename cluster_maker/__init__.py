@@ -45,6 +45,12 @@ from .plotting_clustered import plot_clusters_2d, plot_elbow
 # --- High-level interface ---
 from .interface import run_clustering
 
+# --- Hierarchical clustering ---
+from .agglomerative import (
+    agglomerative_clustering,
+    compare_linkages,
+    merge_distances,
+)
 
 __all__ = [
     # Data generation
@@ -81,4 +87,9 @@ __all__ = [
 
     # High-level orchestration
     "run_clustering",
+
+    # Hierarchical clustering
+    "agglomerative_clustering",
+    "compare_linkages",
+    "merge_distances",
 ]
