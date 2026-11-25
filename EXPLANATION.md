@@ -1,0 +1,11 @@
+###
+## The original cluster_plot file had an error which was located at line 62. 
+## 1) The code was originally k=min(k,3) and corrected to k=k. This change removes the limitation
+## of the script producing valid results upto k=3 therefore k=4,k=5 are now working as intended. k on the left side is a paramater introduced in the loop whereas the k on the right hand side of the equalty is a variable.
+## 2) The script returns numbers for silhouette however in the script there is different string assigned to this called silhouette_score. Correcting this change creates consistency when reconciling the script with what the code produces in the terminal.
+
+## The corrected demo script now produces clustering for a group of points in 2D, using k-means for k = 2, 3, 4, 5. The output for k=4 and k=5 is correct and does not display the same results as k=3. In the beginning of the script the required modules are imported and also a function called run_clustering from cluster_maker is added. The first function is defined as main which it takes arguments in the form of listed strings. Then proceeds to add if arguments such as if the length of the initial argument (args) is not equal to 1 then print "Usage: python cluster_plot.py <input_csv>". the 2nd if arugment says that if there not exists a path for input args(0) which is named as input_path then print (f"Error: file not found: {input_path}"). then in this case the package proceeds to make a directory called OUTPUT_DIR as mentioned in the beginning of the script. 
+
+## It then makes some assumptions about the CSV file, it needs to have 2 or more columns and if it doesnt have two columns then it proceeds to make a self-made error message that it must have 2 or more columns.
+
+## The main block in the package is the for-loop with k=2,3,4,5 which runs k-means for each k value. Here it has used the run_clustering() function that was imported at the start of the script. Takes in different inputs such as k=min(k,3) which was previously changed to k=k and considers compute_elbow = FALSE meaning it produces no elblow diagram. Then using the os module it saves the cluster plot in the demo_output file. Collects and prints the metrics and summerizes them using specific k values. Finally proceeds to plot the findings using plt.bar with defined x and y labels and a title.
