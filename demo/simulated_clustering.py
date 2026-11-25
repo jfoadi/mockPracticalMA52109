@@ -16,13 +16,13 @@
 ##  3. Choose k: elbow curve and silhouette score for several values of k
 ##  4. Check that the result is reliable (many random starts)
 ##  5. Final clustering: sizes, cluster means and plots
+##  6. Summary: why this clustering is appropriate
 ##
 ## The analysis is printed first. The figures open together at the end.
 ###
 
 from __future__ import annotations
 
-import os
 import sys
 from typing import List
 
@@ -44,35 +44,29 @@ from cluster_maker import (
     standardise_features,
 )
 
+INPUT_PATH = "data/simulated_data.csv"
 RANDOM_STATE = 42
 K_ELBOW = list(range(1, 9))        # k = 1, ..., 8 for the elbow curve
 K_SILHOUETTE = list(range(2, 9))   # the silhouette needs at least 2 clusters
 N_STARTS = 10                      # random starts for the reliability check
-
-# The data folder sits next to this script's folder, so the script works
-# wherever it is launched from.
-DEFAULT_INPUT = os.path.normpath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                 "..", "data", "simulated_data.csv")
-)
 
 
 def plot_raw_pairs(df: pd.DataFrame) -> None:
     """Scatter plot of every pair of features (histograms on the diagonal)."""
     cols = list(df.columns)
     n = len(cols)
-    fig, ax = plt.subplots(n, n, figsize=(10, 10))
+    plt.figure(figsize=(10, 10))
     for i in range(n):
         for j in range(n):
+            ax = plt.subplot(n, n, i * n + j + 1)
             if i == j:
-                ax[i, j].hist(df[cols[j]], bins=20, color="grey",
-                              edgecolor="white")
+                ax.hist(df[cols[j]], bins=20, color="grey", edgecolor="white")
             else:
-                ax[i, j].scatter(df[cols[j]], df[cols[i]], s=6, alpha=0.6)
+                ax.scatter(df[cols[j]], df[cols[i]], s=6, alpha=0.6)
             if i == n - 1:
-                ax[i, j].set_xlabel(cols[j])
+                ax.set_xlabel(cols[j])
             if j == 0:
-                ax[i, j].set_ylabel(cols[i])
+                ax.set_ylabel(cols[i])
     plt.tight_layout()
 
 
@@ -92,28 +86,37 @@ def plot_all_pairs(df: pd.DataFrame, labels: np.ndarray) -> None:
     """All six pairs of the four features, coloured by cluster."""
     cols = list(df.columns)
     pairs = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
-    fig, ax = plt.subplots(2, 3, figsize=(13, 8))
-    for p, (i, j) in enumerate(pairs):
-        a = ax[p // 3, p % 3]
-        a.scatter(df[cols[i]], df[cols[j]], c=labels, cmap="tab10",
-                  s=12, alpha=0.8)
-        a.set_title(f"{cols[j]} against {cols[i]}")
-        a.set_xlabel(cols[i])
-        a.set_ylabel(cols[j])
-        a.grid(True)
+    plt.figure(figsize=(13, 8))
+    for p in range(len(pairs)):
+        i, j = pairs[p]
+        ax = plt.subplot(2, 3, p + 1)
+        ax.scatter(df[cols[i]], df[cols[j]], c=labels, cmap="tab10",
+                   s=12, alpha=0.8)
+        ax.set_xlabel(cols[i])
+        ax.set_ylabel(cols[j])
+        ax.set_title(f"{cols[j]} against {cols[i]}")
+        ax.grid(True)
     plt.tight_layout()
 
 
+def cluster_sizes(labels: np.ndarray) -> List[int]:
+    """Number of points in each cluster."""
+    return [int(np.sum(labels == c)) for c in np.unique(labels)]
+
+
 def main(args: List[str]) -> None:
-    input_path = args[0] if args else DEFAULT_INPUT
-    if not os.path.exists(input_path):
-        print(f"Error: file not found: {input_path}")
-        sys.exit(1)
+    input_path = args[0] if args else INPUT_PATH
 
     # ------------------------------------------------------------------
     # 1. Load and inspect the data
     # ------------------------------------------------------------------
-    df = pd.read_csv(input_path)
+    try:
+        df = pd.read_csv(input_path)
+    except FileNotFoundError:
+        print(f"Error: file not found: {input_path}")
+        print("Run the script from the project root folder.")
+        sys.exit(1)
+
     feature_cols = list(df.columns)
     X_df = select_features(df, feature_cols)    # also checks they are numeric
     print(f"Data: {df.shape[0]} rows and {df.shape[1]} features: {feature_cols}")
@@ -157,15 +160,14 @@ def main(args: List[str]) -> None:
     plot_silhouette(silhouettes, best_k)
 
     print("\nChoosing the number of clusters:")
-    print(f"{'k':>3} {'inertia':>10} {'drop vs k-1':>12} {'silhouette':>11}")
     for k in K_ELBOW:
-        drop = ""
+        line = f"  k = {k}: inertia = {inertias[k]:.1f}"
         if k > 1:
-            drop = f"{100 * (inertias[k - 1] - inertias[k]) / inertias[k - 1]:.0f}%"
-        sil = f"{silhouettes[k]:.3f}" if k in silhouettes else ""
-        print(f"{k:>3} {inertias[k]:>10.1f} {drop:>12} {sil:>11}")
-    print(f"-> The silhouette score is highest for k = {best_k}, and the "
-          f"inertia stops dropping sharply after it.")
+            drop = 100 * (inertias[k - 1] - inertias[k]) / inertias[k - 1]
+            line = line + f" (down {drop:.0f}% from k = {k - 1})"
+        if k in silhouettes:
+            line = line + f", silhouette = {silhouettes[k]:.3f}"
+        print(line)
 
     # ------------------------------------------------------------------
     # 4. Is the result reliable? Repeat with different random starts
@@ -186,17 +188,15 @@ def main(args: List[str]) -> None:
     print(f"  scikit-learn k-means: inertia {min(sk_inertias):.1f} to "
           f"{max(sk_inertias):.1f}, silhouette {min(sk_silhouettes):.3f} to "
           f"{max(sk_silhouettes):.3f}")
-    print(f"  manual k-means:       inertia {min(manual_inertias):.1f} to "
-          f"{max(manual_inertias):.1f}; reaches the best solution in "
+    print(f"  manual k-means: inertia {min(manual_inertias):.1f} to "
+          f"{max(manual_inertias):.1f}; it reaches the best solution in "
           f"{n_reached} of {N_STARTS} starts")
-    print("  -> The scikit-learn solution does not depend on the start, while "
-          "the manual k-means can get stuck in poor solutions.")
 
     # ------------------------------------------------------------------
     # 5. Final clustering
     # ------------------------------------------------------------------
     labels, centroids = sklearn_kmeans(X, best_k, random_state=RANDOM_STATE)
-    sizes = [int(np.sum(labels == c)) for c in np.unique(labels)]
+    sizes = cluster_sizes(labels)
     print(f"\nFinal clustering with k = {best_k}:")
     print(f"  cluster sizes: {sizes}")
     print(f"  inertia: {compute_inertia(X, labels, centroids):.1f}")
@@ -210,11 +210,17 @@ def main(args: List[str]) -> None:
     print("\nCluster means (original units):")
     print(means)
 
+    # What happens with one cluster fewer and one cluster more?
+    print("\nCluster sizes with one cluster fewer or more:")
+    for k in (best_k - 1, best_k + 1):
+        labels_k, _ = sklearn_kmeans(X, k, random_state=RANDOM_STATE)
+        print(f"  k = {k}: {cluster_sizes(labels_k)}")
+
     # Cluster plot from the package: the first two features
     fig, ax = plot_clusters_2d(
-        X[:, [0, 1]],
+        X[:, :2],
         labels,
-        centroids=centroids[:, [0, 1]],
+        centroids=centroids[:, :2],
         title=f"k-means with k = {best_k}",
     )
     ax.set_xlabel(f"{feature_cols[0]} (standardised)")
@@ -223,7 +229,25 @@ def main(args: List[str]) -> None:
     # Supporting figure: the clusters seen in every pair of features
     plot_all_pairs(df, labels)
 
-    print(f"\nConclusion: the data separate into {best_k} well-defined clusters.")
+    # ------------------------------------------------------------------
+    # 6. Summary: why this clustering is appropriate
+    # ------------------------------------------------------------------
+    print(f"\nSummary: the data separate into {best_k} clusters, because")
+    print(f"  1. the silhouette score is highest for k = {best_k} "
+          f"({silhouettes[best_k]:.3f});")
+    drop_to_best = 100 * (inertias[best_k - 1] - inertias[best_k]) / inertias[best_k - 1]
+    if best_k + 1 in inertias:
+        drop_after = 100 * (inertias[best_k] - inertias[best_k + 1]) / inertias[best_k]
+        print(f"  2. the inertia falls by {drop_to_best:.0f}% when going to "
+              f"k = {best_k}, but only by {drop_after:.0f}% beyond it (elbow);")
+    print(f"  3. the clusters have sizes {sizes}, and with one cluster fewer or "
+          f"more the groups are merged or split (see above);")
+    if max(sk_inertias) <= 1.01 * min(sk_inertias):
+        print(f"  4. the solution is stable: all {N_STARTS} random starts of "
+              f"scikit-learn k-means give the same inertia.")
+    else:
+        print(f"  4. the solution changes with the random start, so it should "
+              f"be treated with caution.")
 
     # Display all the figures (close the windows to finish)
     plt.show()
