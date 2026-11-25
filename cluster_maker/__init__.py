@@ -31,6 +31,7 @@ from .algorithms import (
     assign_clusters,
     update_centroids,
 )
+from .agglomerative import agglomerative_clustering
 
 # --- Evaluation ---
 from .evaluation import (
@@ -69,6 +70,7 @@ __all__ = [
     "init_centroids",
     "assign_clusters",
     "update_centroids",
+    "agglomerative_clustering",
 
     # Evaluation
     "compute_inertia",

@@ -24,16 +24,16 @@ OUTPUT_DIR = "demo_output"
 
 
 def main(args: List[str]) -> None:
-    if len(args) != 1:
+    if len(args) != 1: # only one argument is allowed
         print("Usage: python cluster_plot.py <input_csv>")
         sys.exit(1)
 
     input_path = args[0]
-    if not os.path.exists(input_path):
+    if not os.path.exists(input_path): # check the file exists
         print(f"Error: file not found: {input_path}")
         sys.exit(1)
 
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(OUTPUT_DIR, exist_ok=True) # make a directory where outputs are stored
 
     # The CSV is assumed to have two or more data columns
     df = pd.read_csv(input_path)
@@ -59,7 +59,7 @@ def main(args: List[str]) -> None:
             input_path=input_path,
             feature_cols=feature_cols,
             algorithm="kmeans",
-            k = min(k, 3),
+            k = k, # new code: should be k to not repeat k=3 for 4 and 5
             standardise=True,
             output_path=os.path.join(OUTPUT_DIR, f"{base}_clustered_k{k}.csv"),
             random_state=42,
@@ -86,9 +86,9 @@ def main(args: List[str]) -> None:
     metrics_df.to_csv(metrics_csv, index=False)
 
     # Plot some statistics (no elbow: avoid inertia vs k)
-    if "silhouette_score" in metrics_df.columns:
+    if "silhouette" in metrics_df.columns: # new code
         plt.figure()
-        plt.bar(metrics_df["k"], metrics_df["silhouette_score"])
+        plt.bar(metrics_df["k"], metrics_df["silhouette"]) # new code: should be silhouette not silhouette_score (silhouette is named in cluster_maker/interface.py)
         plt.xlabel("k")
         plt.ylabel("Silhouette score")
         plt.title("Silhouette score for different k")
