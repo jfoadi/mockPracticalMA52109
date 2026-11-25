@@ -20,6 +20,7 @@ from .dataframe_builder import define_dataframe_structure, simulate_data
 from .data_analyser import calculate_descriptive_statistics, calculate_correlation
 from .data_exporter import export_to_csv, export_formatted
 
+
 # --- Preprocessing ---
 from .preprocessing import select_features, standardise_features
 
@@ -31,7 +32,7 @@ from .algorithms import (
     assign_clusters,
     update_centroids,
 )
-
+from .agglomerative import agglomerative_clustering
 # --- Evaluation ---
 from .evaluation import (
     compute_inertia,
